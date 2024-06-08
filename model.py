@@ -5,6 +5,8 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import math
 
+from configs import get_gpt_configs
+configs = get_gpt_configs()
 
 class InputEmbedding(nn.Module):
     def __init__(self, d_model: int, vocab_size: int):
@@ -17,18 +19,35 @@ class InputEmbedding(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model: int, seq_len: int, dropout: float):
+    def __init__(self, d_model: int, dropout: float):
         super().__init__()
 
-        self.seq_len = seq_len
-        self.positional_embedding_table = nn.Embedding(seq_len, d_model)
+        self.positional_embedding_table = nn.Embedding(configs['seq_len'], d_model)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        pe = self.positional_embedding_table(torch.arange(self.seq_len)) # (seq_len, d_model)
+        _, seq_len , _= x.shape
+        # print(f'x shape : \n {x.shape}')
+        pe = self.positional_embedding_table(torch.arange(seq_len)) # (seq_len, d_model)
+        # print(f'pe shape : \n {pe.shape}')
         x = x + pe
         return  self.dropout(x)
     
+
+# class PositionalEncoding(nn.Module):
+#     def __init__(self, d_model: int, seq_len: int, dropout: float):
+#         super().__init__()
+
+#         # self.seq_len = seq_len
+#         self.positional_embedding_table = nn.Embedding(seq_len, d_model)
+#         self.dropout = nn.Dropout(dropout)
+
+#     def forward(self, x):
+#         print(f'x shape : \n {x.shape}')
+#         pe = self.positional_embedding_table(torch.arange(self.seq_len)) # (seq_len, d_model)
+#         print(f'pe shape : \n {pe.shape}')
+#         x = x + pe
+#         return  self.dropout(x)
 
     
 class LayerNormalization(nn.Module):
@@ -182,15 +201,16 @@ class GPT(nn.Module):
         
         super().__init__()
         self.input_embedding = InputEmbedding(d_model=d_model, vocab_size=vocab_size)
-        self.pos_encoding = PositionalEncoding(d_model=d_model, seq_len=seq_len, dropout=pos_drop)
+        self.pos_encoding = PositionalEncoding(d_model=d_model, dropout=pos_drop)
         self.encoder = Encoder(num_encoders=num_encoders, d_model=d_model, num_heads=num_heads, d_ff=d_ff,  dropout=encoder_drop)
         self.projection = ProjectionLayer(d_model=d_model, vocab_size=vocab_size)
         
-        self.register_buffer('tril', torch.tril(torch.ones(1, 1, seq_len, seq_len)))
+        # self.register_buffer('tril', torch.tril(torch.ones(1, 1, seq_len, seq_len)))
 
     def forward(self, x, mask=None):
         # print(f'self.tril : \n{self.tril}')
-        mask_att = self.tril
+        # mask_att = self.tril
+        mask_att = torch.tril(torch.ones(1, 1, x.shape[1], x.shape[1]))
         # input to model : (batch, seq_len)
         x = self.input_embedding(x)
         x = self.pos_encoding(x)
