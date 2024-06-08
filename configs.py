@@ -10,5 +10,5 @@ def get_gpt_configs():
                 num_heads = 4,
                 d_ff = 50,
                 pos_drop = .3,
-                encoder_drop = .3)
+                encoder_drop = .5)
 
