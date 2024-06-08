@@ -98,15 +98,15 @@ class MultiHeadAttention(nn.Module):
         # print(f'----------------------------------------------------')
 
         attention_scores = torch.softmax(attention_scores, dim=-1)
-        print(f'attention_scores: \n {attention_scores[0][0]} ')
-        print(f'values: \n {value[0][0]} ')
-        print(f'res before drop : \n {(attention_scores @ value)[0][0]} ')
+        # print(f'attention_scores: \n {attention_scores[0][0]} ')
+        # print(f'values: \n {value[0][0]} ')
+        # print(f'res before drop : \n {(attention_scores @ value)[0][0]} ')
 
         if dropout is not None: 
             attention_scores = dropout(attention_scores)
 
         res = attention_scores @ value
-        print(f'res after drop : \n {(attention_scores @ value)[0][0]} ')
+        # print(f'res after drop : \n {(attention_scores @ value)[0][0]} ')
 
         return (attention_scores @ value ), attention_scores
 
