@@ -88,14 +88,17 @@ def train(model,
     
 # ------------------------------------------------------------------------------------------------
     if save_wandb : 
-        wandb.init(
-        # Set the project where this run will be logged
-        project=project_name, 
-        # We pass a run name (otherwise it’ll be randomly assigned, like sunshine-lollypop-10)
-        name=f"exp_{experiment_name}", 
-        # Track hyperparameters and run metadata
-        config=hyper_param_config
-        )
+        try:
+            wandb.init(
+            # Set the project where this run will be logged
+            project=project_name, 
+            # We pass a run name (otherwise it’ll be randomly assigned, like sunshine-lollypop-10)
+            name=f"exp_{experiment_name}", 
+            # Track hyperparameters and run metadata
+            config=hyper_param_config
+            )
+        except:
+            print('Can not initialize to wandb')
 # --------------------------------------------------------------------------------
 
     results = {
