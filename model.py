@@ -5,7 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import math
 
-from configs import get_gpt_configs
+from configs import get_gpt_configs, device
 configs = get_gpt_configs()
 
 class InputEmbedding(nn.Module):
@@ -22,7 +22,7 @@ class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, dropout: float):
         super().__init__()
 
-        self.positional_embedding_table = nn.Embedding(configs['seq_len'], d_model)
+        self.positional_embedding_table = nn.Embedding(configs['seq_len'], d_model).to(device)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
@@ -193,9 +193,6 @@ class ProjectionLayer(nn.Module):
         return self.projection(self.layer_norm(x))
     
 
-from configs import get_gpt_configs
-model_configs = get_gpt_configs()
-
 class GPT(nn.Module):
     def __init__(self, d_model: int, vocab_size: int, seq_len: int, 
                  num_encoders: int, num_heads: int, d_ff: int, 
@@ -213,7 +210,7 @@ class GPT(nn.Module):
         for _ in range(num_max_generated_tokens):
             
             # truncating seq, our model trained with seq_len and our input token should be model_configs['seq_len']
-            promt_token_ids_cond = promt_token_ids[:, :model_configs['seq_len']] # (batch_size, model_configs['seq_len'])
+            promt_token_ids_cond = promt_token_ids[:, :configs['seq_len']] # (batch_size, model_configs['seq_len'])
             logits = self(promt_token_ids_cond) # logits : (batch_size, seq_len, vocab_size)
             logits = logits[:, -1, :] # we selece jsut last element in sequence (batch_size, vocab_size)
             probs = torch.softmax(logits, dim=-1)
@@ -225,7 +222,7 @@ class GPT(nn.Module):
     def forward(self, x, mask=None):
         # print(f'self.tril : \n{self.tril}')
         # mask_att = self.tril
-        mask_att = torch.tril(torch.ones(1, 1, x.shape[1], x.shape[1]))
+        mask_att = torch.tril(torch.ones(1, 1, x.shape[1], x.shape[1])).to(device)
         # input to model : (batch, seq_len)
         x = self.input_embedding(x)
         x = self.pos_encoding(x)
