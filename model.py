@@ -193,6 +193,8 @@ class ProjectionLayer(nn.Module):
         return self.projection(self.layer_norm(x))
     
 
+from configs import get_gpt_configs
+model_configs = get_gpt_configs()
 
 class GPT(nn.Module):
     def __init__(self, d_model: int, vocab_size: int, seq_len: int, 
@@ -206,6 +208,19 @@ class GPT(nn.Module):
         self.projection = ProjectionLayer(d_model=d_model, vocab_size=vocab_size)
         
         # self.register_buffer('tril', torch.tril(torch.ones(1, 1, seq_len, seq_len)))
+
+    def generate(self, promt_token_ids, num_max_generated_tokens):
+        for _ in range(num_max_generated_tokens):
+            
+            # truncating seq, our model trained with seq_len and our input token should be model_configs['seq_len']
+            promt_token_ids_cond = promt_token_ids[:, :model_configs['seq_len']] # (batch_size, model_configs['seq_len'])
+            logits = self(promt_token_ids_cond) # logits : (batch_size, seq_len, vocab_size)
+            logits = logits[:, -1, :] # we selece jsut last element in sequence (batch_size, vocab_size)
+            probs = torch.softmax(logits, dim=-1)
+            idx_next_tokens = torch.multinomial(probs, num_samples=1)
+            promt_token_ids = torch.cat((promt_token_ids, idx_next_tokens), dim=1)
+            
+        return promt_token_ids
 
     def forward(self, x, mask=None):
         # print(f'self.tril : \n{self.tril}')
