@@ -9,10 +9,8 @@ def train_one_epoch(model,
     model.to(device)
 
     train_loss = 0
-    counter = 0 
 
     for i, (x, y) in enumerate(train_dl):
-        counter += 1
         optimizer.zero_grad()
 
         batch_size, seq_len = x.shape

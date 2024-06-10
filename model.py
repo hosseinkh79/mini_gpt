@@ -22,13 +22,13 @@ class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, dropout: float):
         super().__init__()
 
-        self.positional_embedding_table = nn.Embedding(configs['seq_len'], d_model).to(device)
+        self.positional_embedding_table = nn.Embedding(configs['seq_len'], d_model)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         _, seq_len , _= x.shape
         # print(f'x shape : \n {x.shape}')
-        pe = self.positional_embedding_table(torch.arange(seq_len)) # (seq_len, d_model)
+        pe = self.positional_embedding_table(torch.arange(seq_len)).to(device) # (seq_len, d_model)
         # print(f'pe shape : \n {pe.shape}')
         x = x + pe
         return  self.dropout(x)
@@ -222,7 +222,7 @@ class GPT(nn.Module):
     def forward(self, x, mask=None):
         # print(f'self.tril : \n{self.tril}')
         # mask_att = self.tril
-        mask_att = torch.tril(torch.ones(1, 1, x.shape[1], x.shape[1])).to(device)
+        mask_att = torch.tril(torch.ones(1, 1, x.shape[1], x.shape[1]))
         # input to model : (batch, seq_len)
         x = self.input_embedding(x)
         x = self.pos_encoding(x)
