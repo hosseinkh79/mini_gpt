@@ -28,8 +28,9 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         _, seq_len , _= x.shape
         # print(f'x shape : \n {x.shape}')
-        pe = self.positional_embedding_table(torch.arange(seq_len)).to(device) # (seq_len, d_model)
-        # print(f'pe shape : \n {pe.shape}')
+        pe = self.positional_embedding_table(torch.arange(seq_len, device=device))# (seq_len, d_model)
+        print(f'pe device :{pe.device}')
+        print(f'x device :{x.device}')
         x = x + pe
         return  self.dropout(x)
     
